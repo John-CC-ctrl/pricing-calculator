@@ -10,3 +10,1447 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobalt Clean — Pricing Calculator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1B3A6B; --navy-dark: #122848; --navy-mid: #24508a; --navy-light: #3468b0;
+  --gray-50: #f7f8fa; --gray-100: #eef0f4; --gray-200: #dde1e8;
+  --gray-400: #8d97a8; --gray-500: #636e7e; --gray-700: #2e3a4e; --gray-800: #1a2332;
+  --green: #16a34a; --green-bg: #e8f7ee; --orange: #d97706; --orange-bg: #fef3e2;
+  --blue-bg: #eef3ff; --blue-sel: #dbeafe;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08); --shadow: 0 2px 8px rgba(0,0,0,0.10);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12); --radius: 12px; --radius-sm: 8px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-100); color: var(--gray-800); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* HEADER */
+.site-header { background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%); padding: 0 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.25); }
+.header-inner { max-width: 940px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding: 18px 0; }
+.logo-mark { width: 46px; height: 46px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 900; color: var(--navy); letter-spacing: -1px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.header-text h1 { font-size: 20px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+.header-text p { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+/* TABS */
+.tabs-bar { background: var(--navy-dark); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.tabs-inner { max-width: 940px; margin: 0 auto; padding: 0 24px; display: flex; }
+.tab-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.55); padding: 13px 18px; font-size: 14px; font-weight: 500; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
+.tab-btn:hover { color: rgba(255,255,255,0.85); }
+.tab-btn.active { color: white; border-bottom-color: #60aaff; }
+
+/* LAYOUT */
+.container { max-width: 940px; margin: 0 auto; padding: 24px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+
+/* CARDS */
+.card { background: white; border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 18px; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 9px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1.5px solid var(--gray-100); text-transform: uppercase; letter-spacing: 0.5px; }
+.card-title-icon { width: 26px; height: 26px; background: var(--navy); color: white; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+/* FORM */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 5px; }
+.lock-icon { color: var(--orange); }
+input[type="number"] { border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px; color: var(--gray-800); width: 100%; transition: border-color 0.15s, box-shadow 0.15s; background: white; }
+input[type="number"]:focus { outline: none; border-color: var(--navy-light); box-shadow: 0 0 0 3px rgba(52,104,176,0.12); }
+input[type="number"]:disabled { background: var(--gray-50); color: var(--gray-400); cursor: not-allowed; }
+.input-prefix-wrap { position: relative; }
+.input-prefix { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--gray-400); pointer-events: none; }
+.input-prefix-wrap input { padding-left: 22px; }
+.locked-tag { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--orange); background: var(--orange-bg); padding: 2px 7px; border-radius: 4px; }
+
+/* SLIDER */
+.slider-wrap { display: flex; flex-direction: column; gap: 8px; }
+.slider-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-400); }
+input[type="range"] { width: 100%; height: 6px; border-radius: 3px; -webkit-appearance: none; appearance: none; background: var(--gray-200); cursor: pointer; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--navy); box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--navy); border: none; cursor: pointer; }
+.cleanliness-pill { padding: 9px 13px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; border: 1.5px solid; transition: all 0.25s; display: flex; align-items: center; gap: 8px; }
+.cleanliness-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* RATES GRID */
+.rates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.18s; }
+.btn-primary { background: var(--navy); color: white; }
+.btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-ghost { background: var(--orange-bg); color: var(--orange); border: 1.5px solid #fde4b0; font-size: 12px; padding: 7px 13px; }
+.btn-ghost:hover { background: #fde4b0; }
+.btn-cancel { background: var(--gray-100); color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+.btn-cancel:hover { background: var(--gray-200); }
+
+/* RESULT CARDS */
+.result-card { background: white; border: 1.5px solid var(--gray-200); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.result-card.is-decoy { background: var(--gray-50); }
+.result-card.is-featured { background: var(--blue-bg); border-color: var(--navy-light); box-shadow: var(--shadow-md); }
+.result-card.is-downsell { border-color: #fde4b0; background: #fffdf7; }
+.result-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.result-left { flex: 1; min-width: 0; }
+.result-right { text-align: right; flex-shrink: 0; }
+.result-name { font-size: 15px; font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.result-sub { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+.result-note { font-size: 12px; color: var(--gray-500); margin-top: 5px; line-height: 1.4; }
+.result-price { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+.result-price.is-big { font-size: 26px; }
+.result-price.is-strikethrough { font-size: 18px; font-weight: 700; color: var(--gray-400); text-decoration: line-through; }
+.result-meta { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+.result-meta.is-savings { color: var(--green); font-weight: 600; }
+
+/* SELECTABLE SERVICE CARDS */
+.service-card { cursor: pointer; transition: border-color 0.18s, background 0.18s, box-shadow 0.18s; user-select: none; position: relative; }
+.service-card:hover { border-color: var(--navy-light); box-shadow: var(--shadow); }
+.service-card.is-selected { border-left: 4px solid var(--navy) !important; background: var(--blue-sel) !important; box-shadow: var(--shadow-md); }
+.select-check { display: none; position: absolute; top: 10px; right: 14px; width: 22px; height: 22px; background: var(--navy); color: white; border-radius: 50%; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.service-card.is-selected .select-check { display: flex; }
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.badge-navy { background: var(--navy); color: white; }
+.badge-orange { background: var(--orange-bg); color: var(--orange); }
+.badge-gray { background: var(--gray-100); color: var(--gray-500); }
+.badge-green { background: var(--green-bg); color: var(--green); }
+
+/* PRIORITY TOGGLE */
+.toggle-group { display: flex; gap: 8px; margin-top: 12px; }
+.toggle-btn { flex: 1; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 8px; text-align: center; cursor: pointer; background: white; transition: all 0.18s; }
+.toggle-btn:hover { border-color: var(--navy-light); }
+.toggle-btn.active { border-color: var(--navy); background: var(--blue-sel); }
+.toggle-btn-hrs { font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.4px; }
+.toggle-btn-price { font-size: 16px; font-weight: 800; color: var(--navy); margin-top: 2px; }
+.toggle-btn-label { font-size: 10px; color: var(--gray-400); margin-top: 1px; }
+
+/* RECURRING */
+.recurring-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 500px) { .recurring-grid { grid-template-columns: 1fr; } }
+.rec-card { border: 1.5px solid var(--gray-200); border-radius: var(--radius); padding: 16px; text-align: center; background: white; cursor: pointer; transition: border-color 0.18s, background 0.18s; }
+.rec-card:hover { border-color: var(--navy-light); }
+.rec-card.best { border-color: var(--navy); background: var(--blue-bg); }
+.rec-card.is-selected { border-color: var(--navy) !important; background: var(--blue-sel) !important; box-shadow: var(--shadow-md); }
+.rec-freq { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--gray-400); margin-bottom: 6px; }
+.rec-price { font-size: 30px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+.rec-per { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+.rec-save { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 6px; }
+
+/* NOTICE BOXES */
+.notice { border-radius: var(--radius-sm); padding: 11px 15px; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.45; display: flex; align-items: flex-start; gap: 9px; }
+.notice-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+.notice-warn { background: var(--orange-bg); color: #92400e; border: 1px solid #fde4b0; }
+.notice-info { background: var(--blue-bg); color: var(--navy); border: 1px solid #bfdbfe; }
+.notice-success { background: var(--green-bg); color: #166534; border: 1px solid #bbf7d0; }
+
+/* ADD-ONS SECTION */
+.addon-list { display: flex; flex-direction: column; gap: 10px; }
+.addon-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--gray-50); transition: border-color 0.15s; }
+.addon-item:has(input:checked) { border-color: var(--navy-light); background: var(--blue-sel); }
+.addon-left { display: flex; align-items: center; gap: 10px; }
+.addon-left label { font-size: 14px; font-weight: 600; color: var(--gray-800); cursor: pointer; }
+.addon-right { display: flex; align-items: center; gap: 10px; }
+.addon-hours { font-size: 12px; color: var(--gray-400); }
+.addon-price { font-size: 14px; font-weight: 700; color: var(--green); }
+input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--navy); }
+input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.45; }
+
+/* OFFERS SECTION */
+.offer-list { display: flex; flex-direction: column; gap: 8px; }
+.offer-item { display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--gray-50); transition: border-color 0.15s, background 0.15s; cursor: pointer; }
+.offer-item.active-offer { border-color: var(--navy); background: var(--blue-sel); }
+.offer-item.grayed { opacity: 0.45; pointer-events: none; }
+.offer-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--navy); flex-shrink: 0; margin-top: 2px; }
+.offer-info { flex: 1; }
+.offer-name { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.offer-desc { font-size: 11px; color: var(--gray-500); margin-top: 2px; line-height: 1.4; }
+
+/* DOWNSELL FLOW */
+.flow-list { display: flex; flex-direction: column; gap: 4px; }
+.flow-item { display: flex; align-items: flex-start; gap: 13px; background: var(--gray-50); border-radius: var(--radius-sm); padding: 14px 16px; }
+.flow-num { width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.flow-num.alpha { background: var(--green); }
+.flow-content h4 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 2px; }
+.flow-content p { font-size: 12px; color: var(--gray-500); line-height: 1.45; }
+.flow-arrow { text-align: center; font-size: 12px; color: var(--gray-400); padding: 3px 0 5px; font-style: italic; }
+.flow-divider { height: 1px; background: var(--gray-200); margin: 12px 0 10px; }
+.flow-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--gray-400); margin-bottom: 8px; }
+
+/* RECEIPT */
+.receipt-card { background: #f8f9fb; border: 1.5px solid var(--gray-200); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
+.receipt-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.receipt-divider { height: 1px; background: var(--gray-200); margin: 12px 0; }
+.receipt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 0; font-size: 13px; }
+.receipt-row .label { color: var(--gray-500); }
+.receipt-row .value { font-weight: 600; color: var(--gray-800); text-align: right; }
+.receipt-total-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0 4px; }
+.receipt-total-row .label { font-size: 14px; font-weight: 700; color: var(--navy); }
+.receipt-total-row .value { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+.receipt-offer-row { background: var(--green-bg); border-radius: 6px; padding: 6px 10px; margin: 4px 0; }
+.receipt-offer-row .label { color: var(--green); font-weight: 600; font-size: 12px; }
+.receipt-offer-row .value { color: var(--green); font-weight: 700; font-size: 13px; }
+
+/* COMMERCIAL */
+.com-result-box { background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%); border-radius: var(--radius); padding: 36px 24px; text-align: center; color: white; box-shadow: var(--shadow-md); margin-top: 4px; }
+.com-result-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.65; margin-bottom: 8px; }
+.com-result-price { font-size: 56px; font-weight: 800; letter-spacing: -2px; margin-bottom: 8px; line-height: 1; }
+.com-result-detail { font-size: 14px; opacity: 0.7; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: white; border-radius: var(--radius); padding: 28px; max-width: 380px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+.modal-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; color: var(--gray-800); }
+.modal-box p { font-size: 14px; color: var(--gray-500); line-height: 1.55; margin-bottom: 22px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* MISC */
+.hidden { display: none !important; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.mb-16 { margin-bottom: 16px; }
+.help-note { font-size: 12px; color: var(--gray-400); margin-top: 10px; line-height: 1.5; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--gray-400); }
+.empty-icon { font-size: 38px; margin-bottom: 10px; }
+.empty-text { font-size: 14px; }
+.pri-note { font-size: 11px; color: var(--gray-500); margin-top: 10px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-mark">CC</div>
+    <div class="header-text">
+      <h1>Cobalt Clean</h1>
+      <p>Internal Pricing Calculator &mdash; Las Vegas, NV</p>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchTab('residential',this)">&#127968; Residential</button>
+    <button class="tab-btn" onclick="switchTab('commercial',this)">&#127970; Commercial</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══ RESIDENTIAL ═══ -->
+  <div id="tab-residential" class="tab-pane active">
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#128207;</span> Property Details</div>
+      <div class="two-col">
+        <div class="form-group">
+          <div class="field-label">Total Square Footage</div>
+          <input type="number" id="res-sqft" placeholder="e.g. 2000" min="100" max="25000" oninput="triggerCalc()">
+        </div>
+        <div class="form-group">
+          <div class="field-label">Cleanliness Level (1&ndash;10)</div>
+          <div class="slider-wrap">
+            <div class="slider-ends"><span>1 &mdash; Very Dirty</span><span>10 &mdash; Pristine</span></div>
+            <input type="range" id="res-cleanliness" min="1" max="10" value="5" oninput="updateCleanlinessUI();triggerCalc()">
+            <div id="cleanliness-pill" class="cleanliness-pill">
+              <div id="cleanliness-dot" class="cleanliness-dot"></div>
+              <span id="cleanliness-text">Level 5 &mdash; Average</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between mb-16">
+        <div class="card-title" style="margin:0;border:none;padding:0;"><span class="card-title-icon">&#128178;</span> Hourly Rates</div>
+        <button class="btn btn-ghost" id="edit-rates-btn" onclick="requestEditRates()">&#128274; Edit Rates</button>
+      </div>
+      <div class="rates-grid">
+        <div class="form-group">
+          <div class="field-label"><span class="lock-icon" id="lock-decoy">&#128274;</span> Regular Deep Clean</div>
+          <div class="input-prefix-wrap"><span class="input-prefix">$</span><input type="number" id="rate-decoy" value="65" disabled oninput="triggerCalc()"><span class="locked-tag" id="ltag-decoy">LOCKED</span></div>
+        </div>
+        <div class="form-group">
+          <div class="field-label"><span class="lock-icon" id="lock-deep">&#128274;</span> Deluxe / Deep Clean</div>
+          <div class="input-prefix-wrap"><span class="input-prefix">$</span><input type="number" id="rate-deep" value="57" disabled oninput="triggerCalc()"><span class="locked-tag" id="ltag-deep">LOCKED</span></div>
+        </div>
+        <div class="form-group">
+          <div class="field-label"><span class="lock-icon" id="lock-standard">&#128274;</span> Standard Clean</div>
+          <div class="input-prefix-wrap"><span class="input-prefix">$</span><input type="number" id="rate-standard" value="52" disabled oninput="triggerCalc()"><span class="locked-tag" id="ltag-standard">LOCKED</span></div>
+        </div>
+      </div>
+      <p class="pri-note">&#8505;&#65039; Priority Area Clean rate = Standard + $3/hr (auto-derived)</p>
+      <p class="help-note">&#128274; Locked rates require confirmation to edit. Recurring rates are automatically derived from the Standard Clean estimate.</p>
+    </div>
+
+    <!-- BARTER RATE SECTION (hidden by default) -->
+    <div class="card hidden" id="barter-rate-section">
+      <div class="flex-between mb-16">
+        <div class="card-title" style="margin:0;border:none;padding:0;"><span class="card-title-icon">&#128260;</span> Barter Rate (IMS/ITEX)</div>
+        <button class="btn btn-ghost" id="edit-barter-btn" onclick="requestEditBarter()">&#128274; Edit Barter Rate</button>
+      </div>
+      <div class="form-group" style="max-width:200px;">
+        <div class="field-label"><span class="lock-icon" id="lock-barter">&#128274;</span> Barter Rate</div>
+        <div class="input-prefix-wrap"><span class="input-prefix">$</span><input type="number" id="rate-barter" value="65" disabled oninput="triggerCalc()"><span class="locked-tag" id="ltag-barter">LOCKED</span></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="res-results" class="hidden">
+
+      <!-- Notices -->
+      <div id="notice-small" class="notice notice-info hidden">
+        <span class="notice-icon">&#8505;&#65039;</span>
+        <span>Small property &mdash; under 1,000 sq ft minimums apply. Min Standard = 2.5 hrs, Min Deep/Moving = 5 hrs.</span>
+      </div>
+      <div id="notice-std-disabled" class="notice notice-warn hidden">
+        <span class="notice-icon">&#9888;&#65039;</span>
+        <span>Standard Clean not available at this dirt level. Deluxe Clean required.</span>
+      </div>
+      <div id="notice-maintained" class="notice notice-success hidden">
+        <span class="notice-icon">&#10003;</span>
+        <span>Maintained Home Discount active &mdash; 0.5 hrs subtracted from Deep and Standard estimates.</span>
+      </div>
+
+      <!-- Decoy / Anchor (NOT selectable) -->
+      <div class="result-card is-decoy">
+        <div class="result-row">
+          <div class="result-left">
+            <div class="result-name">Regular Deep Clean <span class="badge badge-gray">Standard Price</span></div>
+            <div class="result-sub" id="out-decoy-hrs">&mdash;</div>
+          </div>
+          <div class="result-right">
+            <div class="result-price is-strikethrough" id="out-decoy-price">&mdash;</div>
+            <div class="result-meta">at $<span id="out-decoy-rate">65</span>/hr</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deluxe / Deep Clean (selectable) -->
+      <div class="result-card is-featured service-card" id="scard-deep" onclick="selectService('deep')">
+        <span class="select-check">&#10003;</span>
+        <div class="result-row">
+          <div class="result-left">
+            <div class="result-name">Deluxe / Deep Clean <span class="badge badge-navy">Book Today</span></div>
+            <div class="result-sub" id="out-deep-hrs">&mdash;</div>
+          </div>
+          <div class="result-right">
+            <div class="result-price is-big" id="out-deep-price">&mdash;</div>
+            <div class="result-meta is-savings" id="out-deep-savings"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moving Clean (selectable) -->
+      <div class="result-card service-card" id="scard-moving" onclick="selectService('moving')">
+        <span class="select-check">&#10003;</span>
+        <div class="result-row">
+          <div class="result-left">
+            <div class="result-name">Moving Clean</div>
+            <div class="result-sub" id="out-moving-hrs">&mdash;</div>
+          </div>
+          <div class="result-right">
+            <div class="result-price" id="out-moving-price">&mdash;</div>
+            <div class="result-meta">at $<span id="out-moving-rate">57</span>/hr</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standard Clean (selectable, hidden at levels 1-2) -->
+      <div id="scard-standard-wrap">
+        <div class="result-card service-card" id="scard-standard" onclick="selectService('standard')">
+          <span class="select-check">&#10003;</span>
+          <div class="result-row">
+            <div class="result-left">
+              <div class="result-name">Standard Clean <span style="font-size:12px;font-weight:400;color:var(--gray-400);">Initial / Non-Recurring</span></div>
+              <div class="result-sub" id="out-standard-hrs">&mdash;</div>
+            </div>
+            <div class="result-right">
+              <div class="result-price" id="out-standard-price">&mdash;</div>
+              <div class="result-meta">at $<span id="out-standard-rate">52</span>/hr</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Area Clean (selectable) -->
+      <div id="priority-section">
+        <div class="result-card is-downsell service-card" id="scard-priority" onclick="selectService('priority')">
+          <span class="select-check">&#10003;</span>
+          <div class="result-row">
+            <div class="result-left">
+              <div class="result-name">Priority Area Clean <span class="badge badge-orange">Downsell Option</span> <span class="badge badge-green" id="badge-maintained-pri" style="display:none;">Maintained</span></div>
+              <div class="result-sub">High-Traffic Zones Only</div>
+              <div class="result-note">Focuses on kitchen and bathrooms. Does not cover full home.</div>
+            </div>
+            <div class="result-right">
+              <div class="result-price" id="out-priority-price-main">&mdash;</div>
+              <div class="result-meta" id="out-priority-hrs-main">&mdash;</div>
+            </div>
+          </div>
+          <!-- A/B/C Toggle -->
+          <div class="toggle-group" onclick="event.stopPropagation()">
+            <div class="toggle-btn" id="toggle-A" onclick="selectPriorityOpt('A')">
+              <div class="toggle-btn-hrs" id="tA-hrs">—</div>
+              <div class="toggle-btn-price" id="tA-price">—</div>
+              <div class="toggle-btn-label">Option A</div>
+            </div>
+            <div class="toggle-btn active" id="toggle-B" onclick="selectPriorityOpt('B')">
+              <div class="toggle-btn-hrs" id="tB-hrs">—</div>
+              <div class="toggle-btn-price" id="tB-price">—</div>
+              <div class="toggle-btn-label">Option B ★</div>
+            </div>
+            <div class="toggle-btn" id="toggle-C" onclick="selectPriorityOpt('C')">
+              <div class="toggle-btn-hrs" id="tC-hrs">—</div>
+              <div class="toggle-btn-price" id="tC-price">—</div>
+              <div class="toggle-btn-label">Option C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="priority-removed-notice" class="notice notice-info hidden">
+        <span class="notice-icon">&#8505;&#65039;</span>
+        <span>Full home clean recommended at this size. Priority Area Clean not shown.</span>
+      </div>
+
+      <!-- Add-On Services -->
+      <div class="card" id="addon-section">
+        <div class="card-title"><span class="card-title-icon">&#10133;</span> Add-On Services</div>
+        <div id="addon-deep-notice" class="notice notice-info hidden" style="margin-bottom:12px;">
+          <span class="notice-icon">&#8505;&#65039;</span>
+          <span>All add-ons included with Deluxe Clean.</span>
+        </div>
+        <div class="addon-list">
+          <div class="addon-item">
+            <div class="addon-left">
+              <input type="checkbox" id="addon-oven" onchange="onAddonChange('oven')">
+              <label for="addon-oven">Oven Cleaning</label>
+            </div>
+            <div class="addon-right">
+              <span class="addon-hours">+1 hr</span>
+              <span class="addon-price">+$59</span>
+            </div>
+          </div>
+          <div class="addon-item">
+            <div class="addon-left">
+              <input type="checkbox" id="addon-fridge" onchange="onAddonChange('fridge')">
+              <label for="addon-fridge">Inside Fridge</label>
+            </div>
+            <div class="addon-right">
+              <span class="addon-hours">+1 hr</span>
+              <span class="addon-price">+$59</span>
+            </div>
+          </div>
+          <div class="addon-item">
+            <div class="addon-left">
+              <input type="checkbox" id="addon-windows" onchange="onAddonChange('windows')">
+              <label for="addon-windows">Inside Windows</label>
+            </div>
+            <div class="addon-right">
+              <span class="addon-hours">+1 hr</span>
+              <span class="addon-price">+$59</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1-Click Offers -->
+      <div class="card" id="offers-section">
+        <div class="card-title"><span class="card-title-icon">&#127381;</span> 1-Click Offers</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">Same-call booking tools. One offer active at a time.</p>
+        <div class="offer-list">
+          <div class="offer-item" id="offer-item-military" onclick="onOfferChange('military')">
+            <input type="checkbox" id="offer-military" class="offer-checkbox" onchange="onOfferChange('military')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">Military Discount</div>
+              <div class="offer-desc">&minus;$25 off all initial clean prices</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-senior" onclick="onOfferChange('senior')">
+            <input type="checkbox" id="offer-senior" class="offer-checkbox" onchange="onOfferChange('senior')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">Senior Discount</div>
+              <div class="offer-desc">&minus;$15 off all initial clean prices</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-firsttime" onclick="onOfferChange('firsttime')">
+            <input type="checkbox" id="offer-firsttime" class="offer-checkbox" onchange="onOfferChange('firsttime')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">First Time Client Credit &mdash; $20</div>
+              <div class="offer-desc">&minus;$20 off all initial clean prices</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-deluxe150" onclick="onOfferChange('deluxe150')">
+            <input type="checkbox" id="offer-deluxe150" class="offer-checkbox" onchange="onOfferChange('deluxe150')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">Upgrade to Deluxe Clean &mdash; $150 off when you sign up for recurring</div>
+              <div class="offer-desc">&minus;$150 off Deluxe Clean price only</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-ff" onclick="onOfferChange('ff')">
+            <input type="checkbox" id="offer-ff" class="offer-checkbox" onchange="onOfferChange('ff')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">Friend &amp; Family Mode</div>
+              <div class="offer-desc">All prices recalculated at $35/hr (hours unchanged)</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-barter" onclick="onOfferChange('barter')">
+            <input type="checkbox" id="offer-barter" class="offer-checkbox" onchange="onOfferChange('barter')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">Barter Mode (IMS/ITEX)</div>
+              <div class="offer-desc">All prices at $65/hr (hours unchanged) + unlock editable barter rate field</div>
+            </div>
+          </div>
+          <div class="offer-item" id="offer-item-3pack" onclick="onOfferChange('3pack')">
+            <input type="checkbox" id="offer-3pack" class="offer-checkbox" onchange="onOfferChange('3pack')" onclick="event.stopPropagation()">
+            <div class="offer-info">
+              <div class="offer-name">3 Clean Package &mdash; Save $75</div>
+              <div class="offer-desc">Standard: $25 off each &times; 3. Deluxe: $50 off each &times; 3. Client must purchase package now and schedule next 3 cleans.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recurring Service Rates -->
+      <div class="card">
+        <div class="card-title"><span class="card-title-icon">&#128260;</span> Recurring Service Rates</div>
+        <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;" id="rec-subtitle">Post-initial-clean pricing. Automatically stepped down from your Standard Clean lower estimate.</p>
+        <div class="recurring-grid">
+          <div class="rec-card" id="rec-monthly" onclick="selectFreq('monthly')">
+            <div class="rec-freq">Monthly</div>
+            <div class="rec-price" id="out-monthly">&mdash;</div>
+            <div class="rec-per">per visit</div>
+            <div class="rec-save" id="out-monthly-save"></div>
+          </div>
+          <div class="rec-card is-selected" id="rec-biweekly" onclick="selectFreq('biweekly')">
+            <div class="rec-freq">Bi-Weekly</div>
+            <div class="rec-price" id="out-biweekly">&mdash;</div>
+            <div class="rec-per">per visit</div>
+            <div class="rec-save" id="out-biweekly-save"></div>
+          </div>
+          <div class="rec-card best" id="rec-weekly" onclick="selectFreq('weekly')">
+            <div class="rec-freq">&#11088; Weekly &mdash; Best Value</div>
+            <div class="rec-price" id="out-weekly">&mdash;</div>
+            <div class="rec-per">per visit</div>
+            <div class="rec-save" id="out-weekly-save"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Sequence Downsell Path -->
+      <div class="card">
+        <div class="card-title"><span class="card-title-icon">&#128203;</span> Sales Sequence &mdash; Downsell Path</div>
+        <div class="flow-list">
+          <div class="flow-item">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>Lead: Deluxe / Deep Clean &mdash; <span id="ds-deep">&mdash;</span></h4>
+              <p>Anchor against the Regular Deep Clean price. Present as a limited-time discounted upgrade.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">If client declines &darr;</div>
+          <div class="flow-item">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>Offer: Standard Clean &mdash; <span id="ds-standard">&mdash;</span></h4>
+              <p>Lighter clean at a lower price point. Full-home coverage, good entry-level option.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">If client declines &darr;</div>
+          <div class="flow-item">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <h4>Offer: Priority Area Clean &mdash; <span id="ds-priority">&mdash;</span></h4>
+              <p>Kitchen and bathrooms only. Low commitment, immediate visible result.</p>
+            </div>
+          </div>
+          <div class="flow-divider"></div>
+          <div class="flow-section-label">Recurring Upgrade Path</div>
+          <div class="flow-item">
+            <div class="flow-num alpha">A</div>
+            <div class="flow-content">
+              <h4>Start: Monthly Recurring &mdash; <span id="ds-monthly">&mdash;</span>/visit</h4>
+              <p>Lowest commitment recurring option. Easiest entry point for new clients.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">Upgrade opportunity &darr;</div>
+          <div class="flow-item">
+            <div class="flow-num alpha">B</div>
+            <div class="flow-content">
+              <h4>Upgrade: Bi-Weekly &mdash; <span id="ds-biweekly">&mdash;</span>/visit</h4>
+              <p>More savings per visit. Better home maintenance, stronger client retention.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">Upgrade opportunity &darr;</div>
+          <div class="flow-item">
+            <div class="flow-num alpha">C</div>
+            <div class="flow-content">
+              <h4>Best Value: Weekly &mdash; <span id="ds-weekly">&mdash;</span>/visit</h4>
+              <p>Lowest per-visit price. Highest LTV. Always-clean home &mdash; best upsell for quality-focused clients.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt / Quote Summary -->
+      <div class="receipt-card" id="receipt-section">
+        <div class="receipt-title">&#128196; Quote Summary</div>
+        <div class="receipt-row">
+          <span class="label">Service Type</span>
+          <span class="value" id="rcpt-service">None selected</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Estimated Labor Hours</span>
+          <span class="value" id="rcpt-hrs">&mdash;</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Initial Price</span>
+          <span class="value" id="rcpt-initial-price">&mdash;</span>
+        </div>
+        <div id="rcpt-offer-row" class="receipt-offer-row receipt-row hidden">
+          <span class="label" id="rcpt-offer-label">Active Offer</span>
+          <span class="value" id="rcpt-adjusted-price">&mdash;</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div id="rcpt-addons-block" class="hidden">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--gray-400);margin-bottom:6px;">Add-Ons</div>
+          <div id="rcpt-addon-oven" class="receipt-row hidden"><span class="label">Oven Cleaning</span><span class="value">+$59</span></div>
+          <div id="rcpt-addon-fridge" class="receipt-row hidden"><span class="label">Inside Fridge</span><span class="value">+$59</span></div>
+          <div id="rcpt-addon-windows" class="receipt-row hidden"><span class="label">Inside Windows</span><span class="value">+$59</span></div>
+          <div class="receipt-row" style="border-top:1px solid var(--gray-200);margin-top:4px;padding-top:8px;">
+            <span class="label" style="font-weight:700;">Add-On Total</span>
+            <span class="value" id="rcpt-addon-total">&mdash;</span>
+          </div>
+          <div class="receipt-divider"></div>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Maintenance Rate (<span id="rcpt-freq-label">Bi-Weekly</span>)</span>
+          <span class="value" id="rcpt-recurring">&mdash;</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-total-row">
+          <span class="label">Total Due Today (Est.)</span>
+          <span class="value" id="rcpt-total">&mdash;</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:6px;">Initial price lower end + add-on total, with any discount applied.</div>
+      </div>
+
+    </div><!-- /res-results -->
+
+    <div id="res-empty" class="card">
+      <div class="empty-state">
+        <div class="empty-icon">&#129529;</div>
+        <div class="empty-text">Enter square footage above to generate pricing estimates</div>
+      </div>
+    </div>
+
+  </div><!-- /residential -->
+
+
+  <!-- ═══ COMMERCIAL ═══ -->
+  <div id="tab-commercial" class="tab-pane">
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#127970;</span> Commercial Property Details</div>
+      <div class="two-col">
+        <div class="form-group">
+          <div class="field-label">Total Square Footage</div>
+          <input type="number" id="com-sqft" placeholder="e.g. 5000" min="100" oninput="calcCommercial()">
+        </div>
+        <div class="form-group">
+          <div class="field-label">Rate Per Square Foot ($)</div>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="com-rate" value="0.12" step="0.01" min="0.01" oninput="calcCommercial()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="com-result" class="hidden">
+      <div class="com-result-box">
+        <div class="com-result-label">Estimated Price</div>
+        <div class="com-result-price" id="out-com-price">&mdash;</div>
+        <div class="com-result-detail" id="out-com-detail">&mdash;</div>
+      </div>
+    </div>
+
+    <div id="com-empty" class="card">
+      <div class="empty-state">
+        <div class="empty-icon">&#127970;</div>
+        <div class="empty-text">Enter square footage to generate a commercial estimate</div>
+      </div>
+    </div>
+
+  </div><!-- /commercial -->
+
+</div><!-- /container -->
+
+
+<!-- MODAL: Rates -->
+<div class="modal-overlay" id="rate-modal">
+  <div class="modal-box">
+    <h3>&#9888;&#65039; Edit Hourly Rates</h3>
+    <p>Are you sure you want to change the hourly rate? Only approved hourly rates are allowed.</p>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmEditRates()">Yes, Unlock Rates</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Barter -->
+<div class="modal-overlay" id="barter-modal">
+  <div class="modal-box">
+    <h3>&#9888;&#65039; Edit Barter Rate</h3>
+    <p>Are you sure you want to change the hourly rate? Only approved hourly rates are allowed.</p>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeBarterModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmEditBarter()">Yes, Unlock Barter Rate</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+var selectedService = null; // 'deep'|'moving'|'standard'|'priority'
+var selectedFreq = 'biweekly'; // 'monthly'|'biweekly'|'weekly'
+var priorityOpt = 'B'; // 'A'|'B'|'C'
+var addons = { oven: false, fridge: false, windows: false };
+var activeOffer = null; // 'military'|'senior'|'firsttime'|'deluxe150'|'ff'|'barter'|'3pack'
+var barterRateLocked = true;
+var ratesLocked = true;
+var lastCalc = null;
+
+// ═══════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════
+function roundHours(h) {
+  var whole = Math.floor(h);
+  var frac = h - whole;
+  if (frac <= 0.3) return whole;
+  if (frac <= 0.7) return whole + 0.5;
+  return whole + 1;
+}
+
+function fmtH(h) {
+  if (h == null || isNaN(h)) return '—';
+  if (h === Math.floor(h)) return String(h);
+  return String(h);
+}
+
+function fmtHrsRange(lo, hi) {
+  if (lo === hi) return fmtH(lo) + ' labor hrs';
+  return fmtH(lo) + '–' + fmtH(hi) + ' labor hrs';
+}
+
+function roundToAttractive(price) {
+  if (!price || price <= 0) return 0;
+  var endings = [2, 7, 9];
+  var base = Math.round(price);
+  var best = null;
+  var bestDiff = Infinity;
+  for (var o = -15; o <= 15; o++) {
+    var c = base + o;
+    if (c > 0 && endings.indexOf(((c % 10) + 10) % 10) !== -1) {
+      var d = Math.abs(c - price);
+      if (d < bestDiff) { bestDiff = d; best = c; }
+    }
+  }
+  return best || Math.round(price);
+}
+
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function fmtRange(lo, hi) {
+  if (lo === hi) return fmt(lo);
+  return fmt(lo) + '–' + fmt(hi);
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// CLEANLINESS UI
+// ═══════════════════════════════════════
+var CLEAN_LABELS = ['','Level 1 — Extremely dirty, near-decline condition','Level 2 — Very dirty, heavy buildup throughout','Level 3 — Quite dirty, noticeable grime','Level 4 — Below average, needs extra attention','Level 5 — Average, moderate dirt and dust','Level 6 — Slightly dirty, routine buildup','Level 7 — Mostly clean, light touch-up needed','Level 8 — Clean, minor areas only','Level 9 — Very clean, minimal work needed','Level 10 — Pristine, barely needs cleaning'];
+var CLEAN_COLORS = ['','#b91c1c','#dc2626','#ea580c','#d97706','#ca8a04','#65a30d','#16a34a','#059669','#0891b2','#2563eb'];
+
+function updateCleanlinessUI() {
+  var val = parseInt(document.getElementById('res-cleanliness').value);
+  var color = CLEAN_COLORS[val];
+  document.getElementById('cleanliness-text').textContent = CLEAN_LABELS[val];
+  document.getElementById('cleanliness-dot').style.background = color;
+  var pill = document.getElementById('cleanliness-pill');
+  pill.style.borderColor = color + '55';
+  pill.style.background = color + '12';
+  pill.style.color = color;
+  var pct = ((val - 1) / 9) * 100;
+  var sl = document.getElementById('res-cleanliness');
+  sl.style.background = 'linear-gradient(to right,' + color + ' ' + pct + '%,var(--gray-200) ' + pct + '%)';
+}
+
+// ═══════════════════════════════════════
+// RATE LOCK
+// ═══════════════════════════════════════
+function requestEditRates() {
+  document.getElementById('rate-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('rate-modal').classList.remove('open');
+}
+function confirmEditRates() {
+  ratesLocked = false;
+  closeModal();
+  ['decoy', 'deep', 'standard'].forEach(function(k) {
+    document.getElementById('rate-' + k).disabled = false;
+    document.getElementById('ltag-' + k).style.display = 'none';
+    document.getElementById('lock-' + k).textContent = '\uD83D\uDD13';
+  });
+  var btn = document.getElementById('edit-rates-btn');
+  btn.textContent = '\uD83D\uDD13 Rates Unlocked';
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  triggerCalc();
+}
+
+function requestEditBarter() {
+  document.getElementById('barter-modal').classList.add('open');
+}
+function closeBarterModal() {
+  document.getElementById('barter-modal').classList.remove('open');
+}
+function confirmEditBarter() {
+  barterRateLocked = false;
+  closeBarterModal();
+  document.getElementById('rate-barter').disabled = false;
+  document.getElementById('ltag-barter').style.display = 'none';
+  document.getElementById('lock-barter').textContent = '\uD83D\uDD13';
+  var btn = document.getElementById('edit-barter-btn');
+  btn.textContent = '\uD83D\uDD13 Barter Unlocked';
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  triggerCalc();
+}
+
+// ═══════════════════════════════════════
+// SERVICE SELECTION
+// ═══════════════════════════════════════
+function selectService(svc) {
+  if (selectedService === svc) {
+    selectedService = null;
+  } else {
+    selectedService = svc;
+  }
+  updateServiceHighlights();
+  updateAddonSection();
+  if (lastCalc) {
+    // Recompute recurring for priority selection
+    recomputeRecurring();
+    renderResults();
+    updateReceipt();
+  }
+}
+
+function updateServiceHighlights() {
+  var cards = ['deep', 'moving', 'standard', 'priority'];
+  cards.forEach(function(s) {
+    var el = document.getElementById('scard-' + s);
+    if (!el) return;
+    if (selectedService === s) {
+      el.classList.add('is-selected');
+    } else {
+      el.classList.remove('is-selected');
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// PRIORITY OPTION TOGGLE
+// ═══════════════════════════════════════
+function selectPriorityOpt(opt) {
+  priorityOpt = opt;
+  ['A', 'B', 'C'].forEach(function(o) {
+    var el = document.getElementById('toggle-' + o);
+    if (o === opt) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+  if (selectedService === 'priority' && lastCalc) {
+    recomputeRecurring();
+    updateReceipt();
+  }
+  // Update main display
+  if (lastCalc) {
+    var c = lastCalc;
+    var px = priorityOpt === 'A' ? c.priPxA : priorityOpt === 'C' ? c.priPxC : c.priPxB;
+    var hrs = priorityOpt === 'A' ? c.priHrsA : priorityOpt === 'C' ? c.priHrsC : c.priHrsB;
+    document.getElementById('out-priority-price-main').textContent = fmt(px);
+    document.getElementById('out-priority-hrs-main').textContent = fmtH(hrs) + ' hrs';
+  }
+}
+
+// ═══════════════════════════════════════
+// FREQUENCY SELECTION
+// ═══════════════════════════════════════
+function selectFreq(freq) {
+  selectedFreq = freq;
+  ['monthly', 'biweekly', 'weekly'].forEach(function(f) {
+    var el = document.getElementById('rec-' + f);
+    if (f === freq) el.classList.add('is-selected');
+    else el.classList.remove('is-selected');
+  });
+  updateReceipt();
+}
+
+// ═══════════════════════════════════════
+// ADDON CHANGE
+// ═══════════════════════════════════════
+function onAddonChange(key) {
+  addons[key] = document.getElementById('addon-' + key).checked;
+  updateReceipt();
+}
+
+function updateAddonSection() {
+  var isDeep = (selectedService === 'deep');
+  var notice = document.getElementById('addon-deep-notice');
+  var checkboxes = ['oven', 'fridge', 'windows'];
+  if (isDeep) {
+    notice.classList.remove('hidden');
+    checkboxes.forEach(function(k) {
+      var cb = document.getElementById('addon-' + k);
+      cb.disabled = true;
+      cb.checked = false;
+      addons[k] = false;
+    });
+  } else {
+    notice.classList.add('hidden');
+    checkboxes.forEach(function(k) {
+      document.getElementById('addon-' + k).disabled = false;
+    });
+  }
+}
+
+// ═══════════════════════════════════════
+// OFFER CHANGE
+// ═══════════════════════════════════════
+function onOfferChange(offerId) {
+  var cb = document.getElementById('offer-' + offerId);
+  var allOffers = ['military', 'senior', 'firsttime', 'deluxe150', 'ff', 'barter', '3pack'];
+
+  if (activeOffer === offerId) {
+    // Uncheck = deactivate
+    activeOffer = null;
+    cb.checked = false;
+    document.getElementById('offer-item-' + offerId).classList.remove('active-offer');
+    // Re-enable all
+    allOffers.forEach(function(o) {
+      document.getElementById('offer-item-' + o).classList.remove('grayed');
+    });
+    // Hide barter section
+    document.getElementById('barter-rate-section').classList.add('hidden');
+  } else {
+    // Activate this offer
+    if (activeOffer) {
+      document.getElementById('offer-' + activeOffer).checked = false;
+      document.getElementById('offer-item-' + activeOffer).classList.remove('active-offer');
+    }
+    activeOffer = offerId;
+    cb.checked = true;
+    document.getElementById('offer-item-' + offerId).classList.add('active-offer');
+    // Gray out others
+    allOffers.forEach(function(o) {
+      var item = document.getElementById('offer-item-' + o);
+      if (o === offerId) item.classList.remove('grayed');
+      else item.classList.add('grayed');
+    });
+    // Barter section
+    if (offerId === 'barter') {
+      document.getElementById('barter-rate-section').classList.remove('hidden');
+    } else {
+      document.getElementById('barter-rate-section').classList.add('hidden');
+    }
+  }
+
+  triggerCalc();
+}
+
+// ═══════════════════════════════════════
+// MAIN CALC TRIGGER
+// ═══════════════════════════════════════
+function triggerCalc() {
+  var sqft = parseFloat(document.getElementById('res-sqft').value);
+  if (!sqft || sqft < 100) {
+    document.getElementById('res-results').classList.add('hidden');
+    document.getElementById('res-empty').classList.remove('hidden');
+    return;
+  }
+  calcResidential(sqft);
+}
+
+// ═══════════════════════════════════════
+// RECOMPUTE RECURRING (called on service/freq change without full recalc)
+// ═══════════════════════════════════════
+function recomputeRecurring() {
+  if (!lastCalc) return;
+  var c = lastCalc;
+
+  var monthlyPx, biweeklyPx, weeklyPx, recIsPriority = false;
+
+  if (selectedService === 'priority' && !c.priRemoved && !c.stdDisabled) {
+    recIsPriority = true;
+    var priPrice = priorityOpt === 'A' ? c.priPxA : priorityOpt === 'C' ? c.priPxC : c.priPxB;
+    monthlyPx  = roundToAttractive(priPrice - 2);
+    biweeklyPx = roundToAttractive(monthlyPx - 3);
+    weeklyPx   = roundToAttractive(biweeklyPx - 5);
+  } else {
+    monthlyPx  = roundToAttractive(c.stdLo - 30);
+    biweeklyPx = roundToAttractive(monthlyPx - 12);
+    weeklyPx   = roundToAttractive(biweeklyPx - 18);
+    if (monthlyPx >= c.stdLo) {
+      monthlyPx  = roundToAttractive(c.stdLo - 10);
+      biweeklyPx = roundToAttractive(monthlyPx - 10);
+      weeklyPx   = roundToAttractive(biweeklyPx - 10);
+    }
+  }
+
+  c.monthlyPx = monthlyPx;
+  c.biweeklyPx = biweeklyPx;
+  c.weeklyPx = weeklyPx;
+  c.recIsPriority = recIsPriority;
+}
+
+// ═══════════════════════════════════════
+// RESIDENTIAL CALCULATION
+// ═══════════════════════════════════════
+function calcResidential(sqft) {
+  var level = parseInt(document.getElementById('res-cleanliness').value);
+  var rateDecoy = parseFloat(document.getElementById('rate-decoy').value) || 65;
+  var rateDeep  = parseFloat(document.getElementById('rate-deep').value)  || 57;
+  var rateStd   = parseFloat(document.getElementById('rate-standard').value) || 52;
+  var ratePri   = rateStd + 3;
+
+  // Offer rate overrides (F&F and Barter)
+  if (activeOffer === 'ff') {
+    rateDecoy = rateDeep = rateStd = 35;
+    ratePri = 35;
+  } else if (activeOffer === 'barter') {
+    var br = parseFloat(document.getElementById('rate-barter').value) || 65;
+    rateDecoy = rateDeep = rateStd = br;
+    ratePri = br;
+  }
+
+  // ── DEEP CLEAN HOURS ──
+  var rawDeepHrsLo;
+  var deepSpread;
+  if (level === 1) {
+    var lvl5Speed = 200 + (4 / 9) * 50; // ~222.2
+    rawDeepHrsLo = (sqft / lvl5Speed) * 1.5;
+    deepSpread = 2;
+  } else {
+    var deepSpeed = 200 + ((level - 1) / 9) * 50;
+    rawDeepHrsLo = sqft / deepSpeed;
+    deepSpread = 1;
+  }
+  var rawDeepHrsHi = rawDeepHrsLo + deepSpread;
+
+  // Small property minimums (before rounding)
+  var smallProp = sqft <= 1000;
+  if (smallProp) {
+    rawDeepHrsLo = Math.max(rawDeepHrsLo, 5);
+    rawDeepHrsHi = Math.max(rawDeepHrsHi, 5 + deepSpread);
+  }
+
+  var deepHrsLo = roundHours(rawDeepHrsLo);
+  var deepHrsHi = roundHours(rawDeepHrsHi);
+
+  // Level 10: subtract 0.5 after rounding
+  if (level === 10) {
+    deepHrsLo = Math.max(2, deepHrsLo - 0.5);
+    deepHrsHi = Math.max(2, deepHrsHi - 0.5);
+  }
+
+  // Enforce minimum 2 hrs
+  deepHrsLo = Math.max(2, deepHrsLo);
+  deepHrsHi = Math.max(deepHrsLo + (deepSpread === 2 ? 1.5 : 0.5), deepHrsHi);
+
+  // ── STANDARD CLEAN HOURS ──
+  var stdSpeed = 450 + ((level - 1) / 9) * 50;
+  var rawStdHrsLo = (sqft / stdSpeed) + 0.5;
+  var rawStdHrsHi = rawStdHrsLo + 1;
+
+  if (smallProp) {
+    rawStdHrsLo = Math.max(rawStdHrsLo, 2.5);
+    rawStdHrsHi = Math.max(rawStdHrsHi, 3.5);
+  }
+
+  var stdHrsLo = roundHours(rawStdHrsLo);
+  var stdHrsHi = roundHours(rawStdHrsHi);
+
+  if (level === 10) {
+    stdHrsLo = Math.max(2, stdHrsLo - 0.5);
+    stdHrsHi = Math.max(2, stdHrsHi - 0.5);
+  }
+
+  stdHrsLo = Math.max(2, stdHrsLo);
+  if (stdHrsHi <= stdHrsLo) stdHrsHi = stdHrsLo + 0.5;
+
+  var stdDisabled = (level <= 2);
+
+  // ── BASE PRICES (before discounts) ──
+  var decoyLo = roundToAttractive(deepHrsLo * rateDecoy);
+  var decoyHi = roundToAttractive(deepHrsHi * rateDecoy);
+  var deepLo  = roundToAttractive(deepHrsLo * rateDeep);
+  var deepHi  = roundToAttractive(deepHrsHi * rateDeep);
+  var stdLo   = roundToAttractive(stdHrsLo * rateStd);
+  var stdHi   = roundToAttractive(stdHrsHi * rateStd);
+
+  // ── PRIORITY AREA CLEAN ──
+  var priHrsB = Math.max(2, stdHrsLo - 1);
+  var priHrsA = Math.max(2, priHrsB - 0.5);
+  var priHrsC = Math.min(stdHrsLo - 0.5, priHrsB + 0.5);
+  if (priHrsC <= priHrsB) priHrsC = priHrsB;
+  var priRemoved = (priHrsB >= stdHrsLo);
+
+  var priPxA = roundToAttractive(priHrsA * ratePri);
+  var priPxB = roundToAttractive(priHrsB * ratePri);
+  var priPxC = roundToAttractive(priHrsC * ratePri);
+
+  // ── APPLY OFFER DISCOUNTS (NOT to priority) ──
+  var deepLoD = deepLo, deepHiD = deepHi;
+  var stdLoD = stdLo, stdHiD = stdHi;
+  var movingLoD = deepLo, movingHiD = deepHi; // moving same as deep before discount
+
+  if (activeOffer === 'military') {
+    deepLoD -= 25; deepHiD -= 25;
+    stdLoD  -= 25; stdHiD  -= 25;
+    movingLoD -= 25; movingHiD -= 25;
+  } else if (activeOffer === 'senior') {
+    deepLoD -= 15; deepHiD -= 15;
+    stdLoD  -= 15; stdHiD  -= 15;
+    movingLoD -= 15; movingHiD -= 15;
+  } else if (activeOffer === 'firsttime') {
+    deepLoD -= 20; deepHiD -= 20;
+    stdLoD  -= 20; stdHiD  -= 20;
+    movingLoD -= 20; movingHiD -= 20;
+  } else if (activeOffer === 'deluxe150') {
+    deepLoD -= 150; deepHiD -= 150;
+    // std and moving unaffected
+  } else if (activeOffer === '3pack') {
+    deepLoD -= 50; deepHiD -= 50;
+    stdLoD  -= 25; stdHiD  -= 25;
+    movingLoD -= 50; movingHiD -= 50;
+  }
+  // ff and barter already handled via rate override
+
+  // ── RECURRING ──
+  var monthlyPx, biweeklyPx, weeklyPx, recIsPriority = false;
+
+  if (selectedService === 'priority' && !priRemoved && !stdDisabled) {
+    recIsPriority = true;
+    var priPrice = priorityOpt === 'A' ? priPxA : priorityOpt === 'C' ? priPxC : priPxB;
+    monthlyPx  = roundToAttractive(priPrice - 2);
+    biweeklyPx = roundToAttractive(monthlyPx - 3);
+    weeklyPx   = roundToAttractive(biweeklyPx - 5);
+  } else {
+    monthlyPx  = roundToAttractive(stdLo - 30);
+    biweeklyPx = roundToAttractive(monthlyPx - 12);
+    weeklyPx   = roundToAttractive(biweeklyPx - 18);
+    if (monthlyPx >= stdLo) {
+      monthlyPx  = roundToAttractive(stdLo - 10);
+      biweeklyPx = roundToAttractive(monthlyPx - 10);
+      weeklyPx   = roundToAttractive(biweeklyPx - 10);
+    }
+  }
+
+  var savingsAvg = Math.round(((decoyLo - deepLo) + (decoyHi - deepHi)) / 2);
+
+  lastCalc = {
+    level: level, sqft: sqft, rateDecoy: rateDecoy, rateDeep: rateDeep, rateStd: rateStd, ratePri: ratePri,
+    deepHrsLo: deepHrsLo, deepHrsHi: deepHrsHi, stdHrsLo: stdHrsLo, stdHrsHi: stdHrsHi,
+    decoyLo: decoyLo, decoyHi: decoyHi,
+    deepLo: deepLo, deepHi: deepHi, deepLoD: deepLoD, deepHiD: deepHiD,
+    stdLo: stdLo, stdHi: stdHi, stdLoD: stdLoD, stdHiD: stdHiD,
+    movingLoD: movingLoD, movingHiD: movingHiD,
+    priHrsA: priHrsA, priHrsB: priHrsB, priHrsC: priHrsC,
+    priPxA: priPxA, priPxB: priPxB, priPxC: priPxC,
+    priRemoved: priRemoved, stdDisabled: stdDisabled, smallProp: smallProp,
+    maintainedDiscount: (level === 10),
+    monthlyPx: monthlyPx, biweeklyPx: biweeklyPx, weeklyPx: weeklyPx, recIsPriority: recIsPriority,
+    savingsAvg: savingsAvg
+  };
+
+  renderResults();
+  updateReceipt();
+}
+
+// ═══════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════
+function renderResults() {
+  var c = lastCalc;
+  if (!c) return;
+
+  // Notices
+  setHidden('notice-small', !c.smallProp);
+  setHidden('notice-std-disabled', !c.stdDisabled);
+  setHidden('notice-maintained', !c.maintainedDiscount);
+
+  // Decoy
+  document.getElementById('out-decoy-rate').textContent = c.rateDecoy;
+  document.getElementById('out-decoy-hrs').textContent  = fmtHrsRange(c.deepHrsLo, c.deepHrsHi);
+  document.getElementById('out-decoy-price').textContent = fmtRange(c.decoyLo, c.decoyHi);
+
+  // Deep / Deluxe
+  document.getElementById('out-deep-hrs').textContent     = fmtHrsRange(c.deepHrsLo, c.deepHrsHi);
+  document.getElementById('out-deep-price').textContent   = fmtRange(c.deepLoD, c.deepHiD);
+  document.getElementById('out-deep-savings').textContent = c.savingsAvg > 0 ? 'Save ~' + fmt(c.savingsAvg) + ' vs. regular price' : '';
+  if (activeOffer === 'deluxe150') {
+    document.getElementById('out-deep-savings').textContent = '$150 off with recurring sign-up applied';
+  }
+
+  // Moving
+  document.getElementById('out-moving-rate').textContent  = c.rateDeep;
+  document.getElementById('out-moving-hrs').textContent   = fmtHrsRange(c.deepHrsLo, c.deepHrsHi);
+  document.getElementById('out-moving-price').textContent = fmtRange(c.movingLoD, c.movingHiD);
+
+  // Standard
+  document.getElementById('out-standard-rate').textContent  = c.rateStd;
+  document.getElementById('out-standard-hrs').textContent   = fmtHrsRange(c.stdHrsLo, c.stdHrsHi);
+  document.getElementById('out-standard-price').textContent = fmtRange(c.stdLoD, c.stdHiD);
+
+  // Standard disabled
+  var stdWrap = document.getElementById('scard-standard-wrap');
+  if (c.stdDisabled) {
+    stdWrap.classList.add('hidden');
+    if (selectedService === 'standard') {
+      selectedService = null;
+      updateServiceHighlights();
+    }
+  } else {
+    stdWrap.classList.remove('hidden');
+  }
+
+  // Priority
+  if (c.priRemoved || c.stdDisabled) {
+    setHidden('priority-section', true);
+    setHidden('priority-removed-notice', false);
+    if (selectedService === 'priority') {
+      selectedService = null;
+      updateServiceHighlights();
+    }
+  } else {
+    setHidden('priority-section', false);
+    setHidden('priority-removed-notice', true);
+
+    // Update toggle buttons
+    document.getElementById('tA-hrs').textContent   = fmtH(c.priHrsA) + ' hrs';
+    document.getElementById('tA-price').textContent = fmt(c.priPxA);
+    document.getElementById('tB-hrs').textContent   = fmtH(c.priHrsB) + ' hrs';
+    document.getElementById('tB-price').textContent = fmt(c.priPxB);
+    document.getElementById('tC-hrs').textContent   = fmtH(c.priHrsC) + ' hrs';
+    document.getElementById('tC-price').textContent = fmt(c.priPxC);
+
+    // Main display based on selected option
+    var px  = priorityOpt === 'A' ? c.priPxA : priorityOpt === 'C' ? c.priPxC : c.priPxB;
+    var hrs = priorityOpt === 'A' ? c.priHrsA : priorityOpt === 'C' ? c.priHrsC : c.priHrsB;
+    document.getElementById('out-priority-price-main').textContent = fmt(px);
+    document.getElementById('out-priority-hrs-main').textContent = fmtH(hrs) + ' hrs';
+
+    // Maintained badge
+    var maintBadge = document.getElementById('badge-maintained-pri');
+    if (c.maintainedDiscount) maintBadge.style.display = 'inline-flex';
+    else maintBadge.style.display = 'none';
+  }
+
+  // Recurring
+  document.getElementById('out-monthly').textContent    = fmt(c.monthlyPx);
+  document.getElementById('out-biweekly').textContent   = fmt(c.biweeklyPx);
+  document.getElementById('out-weekly').textContent     = fmt(c.weeklyPx);
+  document.getElementById('out-monthly-save').textContent  = c.stdLo > c.monthlyPx    ? 'Save ' + fmt(c.stdLo - c.monthlyPx) + ' vs initial'     : '';
+  document.getElementById('out-biweekly-save').textContent = c.monthlyPx > c.biweeklyPx ? 'Save ' + fmt(c.monthlyPx - c.biweeklyPx) + ' vs monthly'  : '';
+  document.getElementById('out-weekly-save').textContent   = c.biweeklyPx > c.weeklyPx  ? 'Save ' + fmt(c.biweeklyPx - c.weeklyPx) + ' vs bi-weekly' : '';
+
+  if (c.recIsPriority) {
+    document.getElementById('rec-subtitle').textContent = 'Recurring rates based on selected Priority Area Clean option.';
+  } else {
+    document.getElementById('rec-subtitle').textContent = 'Post-initial-clean pricing. Automatically stepped down from your Standard Clean lower estimate.';
+  }
+
+  // Downsell flow
+  var priPxForDs = priorityOpt === 'A' ? c.priPxA : priorityOpt === 'C' ? c.priPxC : c.priPxB;
+  var priHrsForDs = priorityOpt === 'A' ? c.priHrsA : priorityOpt === 'C' ? c.priHrsC : c.priHrsB;
+  document.getElementById('ds-deep').textContent     = fmtRange(c.deepLoD, c.deepHiD);
+  document.getElementById('ds-standard').textContent = c.stdDisabled ? 'N/A at this level' : fmtRange(c.stdLoD, c.stdHiD);
+  document.getElementById('ds-priority').textContent = (c.priRemoved || c.stdDisabled) ? 'N/A' : fmt(priPxForDs) + ' (' + fmtH(priHrsForDs) + ' hrs)';
+  document.getElementById('ds-monthly').textContent  = fmt(c.monthlyPx);
+  document.getElementById('ds-biweekly').textContent = fmt(c.biweeklyPx);
+  document.getElementById('ds-weekly').textContent   = fmt(c.weeklyPx);
+
+  // Show results
+  document.getElementById('res-results').classList.remove('hidden');
+  document.getElementById('res-empty').classList.add('hidden');
+}
+
+// ═══════════════════════════════════════
+// UPDATE RECEIPT
+// ═══════════════════════════════════════
+function updateReceipt() {
+  if (!lastCalc) return;
+  var c = lastCalc;
+
+  // Service label and hours
+  var svcLabel = 'None selected';
+  var svcHrsLo = null, svcHrsHi = null;
+  var svcPriceLo = null, svcPriceHi = null;
+
+  if (selectedService === 'deep') {
+    svcLabel = 'Deluxe / Deep Clean';
+    svcHrsLo = c.deepHrsLo; svcHrsHi = c.deepHrsHi;
+    svcPriceLo = c.deepLoD; svcPriceHi = c.deepHiD;
+  } else if (selectedService === 'moving') {
+    svcLabel = 'Moving Clean';
+    svcHrsLo = c.deepHrsLo; svcHrsHi = c.deepHrsHi;
+    svcPriceLo = c.movingLoD; svcPriceHi = c.movingHiD;
+  } else if (selectedService === 'standard') {
+    svcLabel = 'Standard Clean';
+    svcHrsLo = c.stdHrsLo; svcHrsHi = c.stdHrsHi;
+    svcPriceLo = c.stdLoD; svcPriceHi = c.stdHiD;
+  } else if (selectedService === 'priority') {
+    svcLabel = 'Priority Area Clean';
+    var pHrs = priorityOpt === 'A' ? c.priHrsA : priorityOpt === 'C' ? c.priHrsC : c.priHrsB;
+    var pPx  = priorityOpt === 'A' ? c.priPxA  : priorityOpt === 'C' ? c.priPxC  : c.priPxB;
+    svcHrsLo = pHrs; svcHrsHi = pHrs;
+    svcPriceLo = pPx; svcPriceHi = pPx;
+  }
+
+  document.getElementById('rcpt-service').textContent = svcLabel;
+
+  // Hours (service + addons)
+  var addonCount = (addons.oven ? 1 : 0) + (addons.fridge ? 1 : 0) + (addons.windows ? 1 : 0);
+  var addonHrs = addonCount; // 1 hr each
+  var addonTotal = addonCount * 59;
+
+  if (svcHrsLo !== null) {
+    var totalHrsLo = svcHrsLo + (selectedService !== 'deep' ? addonHrs : 0);
+    var totalHrsHi = svcHrsHi + (selectedService !== 'deep' ? addonHrs : 0);
+    if (totalHrsLo === totalHrsHi) {
+      document.getElementById('rcpt-hrs').textContent = fmtH(totalHrsLo) + ' hrs';
+    } else {
+      document.getElementById('rcpt-hrs').textContent = fmtH(totalHrsLo) + '–' + fmtH(totalHrsHi) + ' hrs';
+    }
+  } else {
+    document.getElementById('rcpt-hrs').textContent = '—';
+  }
+
+  // Initial price
+  if (svcPriceLo !== null) {
+    document.getElementById('rcpt-initial-price').textContent = fmtRange(svcPriceLo, svcPriceHi);
+  } else {
+    document.getElementById('rcpt-initial-price').textContent = '—';
+  }
+
+  // Offer row — only show if offer active and service selected and not priority
+  var offerRowEl = document.getElementById('rcpt-offer-row');
+  var offerLabelEl = document.getElementById('rcpt-offer-label');
+  var adjustedPriceEl = document.getElementById('rcpt-adjusted-price');
+
+  var offerNames = {
+    military: 'Military Discount (−$25)',
+    senior: 'Senior Discount (−$15)',
+    firsttime: 'First Time Client Credit (−$20)',
+    deluxe150: 'Upgrade to Deluxe −$150',
+    ff: 'Friend & Family Mode ($35/hr)',
+    barter: 'Barter Mode',
+    '3pack': '3 Clean Package'
+  };
+
+  var showOffer = activeOffer && selectedService && selectedService !== 'priority';
+  if (showOffer) {
+    offerRowEl.classList.remove('hidden');
+    offerLabelEl.textContent = offerNames[activeOffer] || activeOffer;
+    adjustedPriceEl.textContent = fmtRange(svcPriceLo, svcPriceHi);
+  } else {
+    offerRowEl.classList.add('hidden');
+  }
+
+  // Add-ons block
+  var addonsBlock = document.getElementById('rcpt-addons-block');
+  var showAddons = addonCount > 0 && selectedService !== 'deep';
+  if (showAddons) {
+    addonsBlock.classList.remove('hidden');
+    setHidden('rcpt-addon-oven', !addons.oven);
+    setHidden('rcpt-addon-fridge', !addons.fridge);
+    setHidden('rcpt-addon-windows', !addons.windows);
+    document.getElementById('rcpt-addon-total').textContent = fmt(addonTotal);
+  } else {
+    addonsBlock.classList.add('hidden');
+  }
+
+  // Recurring
+  var freqLabels = { monthly: 'Monthly', biweekly: 'Bi-Weekly', weekly: 'Weekly' };
+  document.getElementById('rcpt-freq-label').textContent = freqLabels[selectedFreq] || 'Bi-Weekly';
+  var recPx = selectedFreq === 'monthly' ? c.monthlyPx : selectedFreq === 'weekly' ? c.weeklyPx : c.biweeklyPx;
+  document.getElementById('rcpt-recurring').textContent = fmt(recPx) + '/visit';
+
+  // Total due today
+  var totalDue = null;
+  if (svcPriceLo !== null) {
+    var effectiveAddonTotal = (selectedService !== 'deep') ? addonTotal : 0;
+    totalDue = svcPriceLo + effectiveAddonTotal;
+  }
+  document.getElementById('rcpt-total').textContent = totalDue !== null ? fmt(totalDue) : '—';
+}
+
+// ═══════════════════════════════════════
+// COMMERCIAL CALC
+// ═══════════════════════════════════════
+function calcCommercial() {
+  var sqft = parseFloat(document.getElementById('com-sqft').value);
+  var rate = parseFloat(document.getElementById('com-rate').value);
+  if (!sqft || sqft <= 0 || !rate || rate <= 0) {
+    document.getElementById('com-result').classList.add('hidden');
+    document.getElementById('com-empty').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('out-com-price').textContent  = fmt(Math.round(sqft * rate));
+  document.getElementById('out-com-detail').textContent = sqft.toLocaleString('en-US') + ' sq ft × $' + rate.toFixed(2) + '/sq ft';
+  document.getElementById('com-result').classList.remove('hidden');
+  document.getElementById('com-empty').classList.add('hidden');
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function setHidden(id, shouldHide) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (shouldHide) el.classList.add('hidden');
+  else el.classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+updateCleanlinessUI();
+// Set biweekly as initially selected rec card
+document.getElementById('rec-biweekly').classList.add('is-selected');
+</script>
+</body>
+</html>
